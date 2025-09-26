@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { db, todos } from './src/db'
+import { eq } from 'drizzle-orm'
 
 const app = new Hono()
 
@@ -33,6 +34,38 @@ app.post('/todos', async (c) => {
   }).returning()
   
   return c.json(newTodo[0], 201)
+})
+
+// Todo更新
+app.patch('/todos/:id', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  const body = await c.req.json()
+  
+  const updatedTodo = await db.update(todos)
+    .set(body)
+    .where(eq(todos.id, id))
+    .returning()
+  
+  if (updatedTodo.length === 0) {
+    return c.json({ error: 'Todo not found' }, 404)
+  }
+  
+  return c.json(updatedTodo[0])
+})
+
+// Todo削除
+app.delete('/todos/:id', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  
+  const deletedTodo = await db.delete(todos)
+    .where(eq(todos.id, id))
+    .returning()
+  
+  if (deletedTodo.length === 0) {
+    return c.json({ error: 'Todo not found' }, 404)
+  }
+  
+  return c.json({ message: 'Todo deleted successfully' })
 })
 
 export default {
