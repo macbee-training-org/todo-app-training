@@ -1,8 +1,13 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { db, todos } from './src/db'
 import { eq } from 'drizzle-orm'
 
 const app = new Hono()
+app.use('*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+}))
 
 app.get('/', (c) => {
   return c.json({ message: 'Todo API Server' })
