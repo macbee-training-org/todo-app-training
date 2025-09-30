@@ -1,23 +1,38 @@
+
+'use client';
+import { useState, useEffect } from 'react';
 import { TodoList } from '@/components/todo-list';
 import { TodoForm } from '@/components/todo-form';
 import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
 
-export default async function Home() {
-  const todos = await getTodos();
+export default function Home() {
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchTodos = async () => {
+    setLoading(true);
+    const data = await getTodos();
+    setTodos(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
 
   const handleAddTodo = async (title: string) => {
-    'use server';
     await createTodo(title);
+    fetchTodos();
   };
 
   const handleToggleTodo = async (id: number, completed: boolean) => {
-    'use server';
     await updateTodo(id, completed);
+    fetchTodos();
   };
 
   const handleDeleteTodo = async (id: number) => {
-    'use server';
     await deleteTodo(id);
+    fetchTodos();
   };
 
   return (
@@ -25,11 +40,15 @@ export default async function Home() {
       <h1 className="text-4xl font-bold mb-8">Todo App</h1>
       <div className="space-y-6">
         <TodoForm onAdd={handleAddTodo} />
-        <TodoList 
-          initialTodos={todos} 
-          onToggle={handleToggleTodo}
-          onDelete={handleDeleteTodo}
-        />
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <TodoList 
+            initialTodos={todos} 
+            onToggle={handleToggleTodo}
+            onDelete={handleDeleteTodo}
+          />
+        )}
       </div>
     </main>
   );
