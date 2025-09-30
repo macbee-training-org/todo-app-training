@@ -1,9 +1,9 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { TodoList } from '@/components/todo-list';
 import { TodoForm } from '@/components/todo-form';
 import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
+import { UserButton } from '@clerk/nextjs';
 
 export default function Home() {
   const [todos, setTodos] = useState([]);
@@ -37,7 +37,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8">Todo App</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">Todo App</h1>
+        <UserButton />
+      </div>
       <div className="space-y-6">
         <TodoForm onAdd={handleAddTodo} />
         {loading ? (
