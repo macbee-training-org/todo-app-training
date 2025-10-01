@@ -33,7 +33,7 @@ export async function createTodo(title: string, description: string | undefined,
   return res.json();
 }
 
-export async function updateTodo(id: number, completed: boolean, token: string | null) {
+export async function updateTodo(id: number, updates: { completed?: boolean; description?: string }, token: string | null) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -45,7 +45,7 @@ export async function updateTodo(id: number, completed: boolean, token: string |
   const res = await fetch(`${API_URL}/todos/${id}`, {
     method: 'PATCH',
     headers,
-    body: JSON.stringify({ completed })
+    body: JSON.stringify(updates)
   });
   if (!res.ok) throw new Error('Failed to update todo');
   return res.json();

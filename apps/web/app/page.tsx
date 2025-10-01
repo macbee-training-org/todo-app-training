@@ -42,7 +42,15 @@ export default function Home() {
 
   const handleToggleTodo = async (id: number, completed: boolean) => {
     const token = await getToken();
-    await updateTodo(id, completed, token);
+    await updateTodo(id, { completed }, token);
+    
+  const data = await getTodos(token);
+  setTodos(data);
+  };
+
+  const handleUpdateDescription = async (id: number, description: string) => {
+    const token = await getToken();
+    await updateTodo(id, { description }, token);
     
   const data = await getTodos(token);
   setTodos(data);
@@ -75,6 +83,7 @@ export default function Home() {
             initialTodos={todos} 
             onToggle={handleToggleTodo}
             onDelete={handleDeleteTodo}
+            onUpdateDescription={handleUpdateDescription}
           />
         )}
       </div>
