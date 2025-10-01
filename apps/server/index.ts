@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
-import { db, todos } from './src/db'
+import { db, todos } from './src/db/index.js'
 import { eq, and } from 'drizzle-orm'
 
 const app = new Hono()
