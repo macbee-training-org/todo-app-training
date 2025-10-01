@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from './src/db/index.js'
 import { eq, and } from 'drizzle-orm'
@@ -103,4 +102,11 @@ app.delete('/todos/:id', async (c) => {
   
   return c.json({ message: 'Todo deleted successfully' })
 })
-export default handle(app)
+const port = process.env.PORT || 3001
+
+console.log(`Server is running on port ${port}`)
+
+export default {
+  port,
+  fetch: app.fetch,
+}
