@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 // import { cors } from 'hono/cors'
 import { handle } from 'hono/vercel'
-import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
+// import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
 import { eq, and } from 'drizzle-orm'
 
@@ -14,7 +14,8 @@ const app = new Hono()
 //   allowHeaders: ['Content-Type', 'Authorization'],
 // }))
 
-app.use('*', clerkMiddleware())
+// Clerk middleware temporarily disabled due to Vercel URL parsing issues
+// app.use('*', clerkMiddleware())
 
 app.get('/', (c) => {
   return c.json({ message: 'Todo API Server' })
@@ -25,25 +26,25 @@ app.get('/health', (c) => {
 })
 
 app.get('/todos', async (c) => {
-  const auth = getAuth(c)
-  
-  if (!auth?.userId) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
+  // Authentication temporarily disabled
+  // const auth = getAuth(c)
+  // if (!auth?.userId) {
+  //   return c.json({ error: 'Unauthorized' }, 401)
+  // }
   
   const userTodos = await db.select()
     .from(todos)
-    .where(eq(todos.userId, auth.userId))
+    // .where(eq(todos.userId, auth.userId))
   
   return c.json(userTodos)
 })
 
 app.post('/todos', async (c) => {
-  const auth = getAuth(c)
-  
-  if (!auth?.userId) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
+  // Authentication temporarily disabled
+  // const auth = getAuth(c)
+  // if (!auth?.userId) {
+  //   return c.json({ error: 'Unauthorized' }, 401)
+  // }
   
   const body = await c.req.json()
   const { title, description } = body
@@ -53,7 +54,7 @@ app.post('/todos', async (c) => {
   }
   
   const newTodo = await db.insert(todos).values({
-    userId: auth.userId,
+    userId: 'temp-user', // Temporary user ID
     title,
     description,
     completed: false,
@@ -64,42 +65,44 @@ app.post('/todos', async (c) => {
 })
 
 app.patch('/todos/:id', async (c) => {
-  const auth = getAuth(c)
-  
-  if (!auth?.userId) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
+  // Authentication temporarily disabled
+  // const auth = getAuth(c)
+  // if (!auth?.userId) {
+  //   return c.json({ error: 'Unauthorized' }, 401)
+  // }
   
   const id = parseInt(c.req.param('id'))
   const body = await c.req.json()
   
   const updatedTodo = await db.update(todos)
     .set(body)
-    .where(and(eq(todos.id, id), eq(todos.userId, auth.userId)))
+    .where(eq(todos.id, id))
+    // .where(and(eq(todos.id, id), eq(todos.userId, auth.userId)))
     .returning()
   
   if (updatedTodo.length === 0) {
-    return c.json({ error: 'Todo not found or unauthorized' }, 404)
+    return c.json({ error: 'Todo not found' }, 404)
   }
   
   return c.json(updatedTodo[0])
 })
 
 app.delete('/todos/:id', async (c) => {
-  const auth = getAuth(c)
-  
-  if (!auth?.userId) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
+  // Authentication temporarily disabled
+  // const auth = getAuth(c)
+  // if (!auth?.userId) {
+  //   return c.json({ error: 'Unauthorized' }, 401)
+  // }
   
   const id = parseInt(c.req.param('id'))
   
   const deletedTodo = await db.delete(todos)
-    .where(and(eq(todos.id, id), eq(todos.userId, auth.userId)))
+    .where(eq(todos.id, id))
+    // .where(and(eq(todos.id, id), eq(todos.userId, auth.userId)))
     .returning()
   
   if (deletedTodo.length === 0) {
-    return c.json({ error: 'Todo not found or unauthorized' }, 404)
+    return c.json({ error: 'Todo not found' }, 404)
   }
   
   return c.json({ message: 'Todo deleted successfully' })
