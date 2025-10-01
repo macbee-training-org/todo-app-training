@@ -32,9 +32,9 @@ export default function Home() {
     fetchTodos();
   }, [isLoaded, isSignedIn, getToken]);
 
-  const handleAddTodo = async (title: string) => {
+  const handleAddTodo = async (title: string, description?: string) => {
     const token = await getToken();
-    await createTodo(title, token);
+    await createTodo(title, description, token);
     
   const data = await getTodos(token);
   setTodos(data);

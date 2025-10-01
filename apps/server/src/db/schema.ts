@@ -4,6 +4,7 @@ export const todos = pgTable('todos', {
   id: serial('id').primaryKey(),
   userId: text('user_id').notNull(), 
   title: text('title').notNull(),
+  description: text('description'),
   completed: boolean('completed').default(false).notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
 });

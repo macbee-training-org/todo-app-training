@@ -15,7 +15,7 @@ export async function getTodos(token: string | null) {
   return res.json();
 }
 
-export async function createTodo(title: string, token: string | null) {
+export async function createTodo(title: string, description: string | undefined, token: string | null) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -27,7 +27,7 @@ export async function createTodo(title: string, token: string | null) {
   const res = await fetch(`${API_URL}/todos`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ title })
+    body: JSON.stringify({ title, description })
   });
   if (!res.ok) throw new Error('Failed to create todo');
   return res.json();

@@ -44,7 +44,7 @@ app.post('/todos', async (c) => {
   }
   
   const body = await c.req.json()
-  const { title } = body
+  const { title, description } = body
   
   if (!title) {
     return c.json({ error: 'Title is required' }, 400)
@@ -53,6 +53,7 @@ app.post('/todos', async (c) => {
   const newTodo = await db.insert(todos).values({
     userId: auth.userId,
     title,
+    description,
     completed: false,
     createdAt: new Date()
   }).returning()
