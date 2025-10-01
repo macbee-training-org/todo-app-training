@@ -20,7 +20,7 @@ export function TodoForm({ onAdd }: TodoFormProps) {
     try {
       await onAdd(title);
       setTitle(''); 
-    } catch (error) {
+    } catch {
       // エラー時の処理（必要ならUIで表示）
     } finally {
       setIsLoading(false);
