@@ -89,7 +89,7 @@ export default function Home() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="pt-48 pb-8 px-8">
+      <div className="pt-56 pb-8 px-8">
         {loading ? (
           <div className="text-center py-8">Loading...</div>
         ) : (
