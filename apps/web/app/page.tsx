@@ -117,7 +117,7 @@ export default function Home() {
       </div>
 
       {/* Fixed Sort Controls */}
-      <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm z-20" style={{ marginTop: '200px' }}>
+      <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm z-20" style={{ marginTop: '280px' }}>
         <div className="max-w-4xl mx-auto p-6">
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20">
             <div className="flex items-center justify-between">
@@ -170,7 +170,7 @@ export default function Home() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="pt-96 pb-8 px-6">
+      <div className="pt-[400px] pb-8 px-6">
         <div className="max-w-4xl mx-auto">
           {loading ? (
             <div className="text-center py-12">
