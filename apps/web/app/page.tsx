@@ -5,10 +5,14 @@ import { TodoList } from '@/components/todo-list';
 import { TodoForm } from '@/components/todo-form';
 import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
 import { UserButton } from '@clerk/nextjs';
+import type { Todo } from '@/lib/types';
+
+type SortOption = 'created' | 'title' | 'completed' | 'pending';
 
 export default function Home() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<SortOption>('created');
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
@@ -56,6 +60,30 @@ export default function Home() {
   setTodos(data);
   };
 
+  const sortTodos = (todos: Todo[], sortBy: SortOption) => {
+    const sortedTodos = [...todos];
+    
+    switch (sortBy) {
+      case 'title':
+        return sortedTodos.sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+      case 'completed':
+        return sortedTodos.sort((a, b) => {
+          if (a.completed === b.completed) return 0;
+          return a.completed ? 1 : -1;
+        });
+      case 'pending':
+        return sortedTodos.sort((a, b) => {
+          if (a.completed === b.completed) return 0;
+          return a.completed ? -1 : 1;
+        });
+      case 'created':
+      default:
+        return sortedTodos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+  };
+
+  const sortedTodos = sortTodos(todos, sortBy);
+
   const handleDeleteTodo = async (id: number) => {
     const token = await getToken();
     await deleteTodo(id, token);
@@ -88,8 +116,61 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Fixed Sort Controls */}
+      <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm z-20" style={{ marginTop: '200px' }}>
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-700">並び順</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSortBy('created')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    sortBy === 'created'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
+                  }`}
+                >
+                  作成日
+                </button>
+                <button
+                  onClick={() => setSortBy('title')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    sortBy === 'title'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
+                  }`}
+                >
+                  タイトル
+                </button>
+                <button
+                  onClick={() => setSortBy('pending')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    sortBy === 'pending'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
+                  }`}
+                >
+                  未完了
+                </button>
+                <button
+                  onClick={() => setSortBy('completed')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    sortBy === 'completed'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
+                  }`}
+                >
+                  完了
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Scrollable Content */}
-      <div className="pt-80 pb-8 px-6">
+      <div className="pt-96 pb-8 px-6">
         <div className="max-w-4xl mx-auto">
           {loading ? (
             <div className="text-center py-12">
@@ -98,7 +179,7 @@ export default function Home() {
             </div>
           ) : (
             <TodoList 
-              initialTodos={todos} 
+              initialTodos={sortedTodos} 
               onToggle={handleToggleTodo}
               onDelete={handleDeleteTodo}
               onUpdateTodo={handleUpdateTodo}
