@@ -69,12 +69,12 @@ export default function Home() {
       case 'completed':
         return sortedTodos.sort((a, b) => {
           if (a.completed === b.completed) return 0;
-          return a.completed ? 1 : -1;
+          return a.completed ? -1 : 1;
         });
       case 'pending':
         return sortedTodos.sort((a, b) => {
           if (a.completed === b.completed) return 0;
-          return a.completed ? -1 : 1;
+          return a.completed ? 1 : -1;
         });
       case 'created':
       default:
