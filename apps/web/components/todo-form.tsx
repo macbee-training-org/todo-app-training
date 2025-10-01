@@ -30,18 +30,29 @@ export function TodoForm({ onAdd }: TodoFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="flex gap-2">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex gap-3">
         <Input
           type="text"
           placeholder="新しいTodoを入力..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isLoading}
-          className="flex-1"
+          className="flex-1 h-12 text-lg border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200"
         />
-        <Button type="submit" disabled={isLoading || !title.trim()}>
-          {isLoading ? '追加中...' : '追加'}
+        <Button 
+          type="submit" 
+          disabled={isLoading || !title.trim()}
+          className="h-12 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              追加中...
+            </div>
+          ) : (
+            '追加'
+          )}
         </Button>
       </div>
       <Input
@@ -50,7 +61,7 @@ export function TodoForm({ onAdd }: TodoFormProps) {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         disabled={isLoading}
-        className="w-full"
+        className="w-full h-10 border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-sm transition-all duration-200"
       />
     </form>
   );

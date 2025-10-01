@@ -69,31 +69,42 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen max-w-2xl mx-auto">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-10">
-        <div className="max-w-2xl mx-auto p-8">
+      <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm z-10">
+        <div className="max-w-4xl mx-auto p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-4xl font-bold">Todo App</h1>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Todo App
+              </h1>
+              <p className="text-gray-600 mt-1">タスクを効率的に管理しましょう</p>
+            </div>
             <UserButton />
           </div>
-          <TodoForm onAdd={handleAddTodo} />
+          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+            <TodoForm onAdd={handleAddTodo} />
+          </div>
         </div>
       </div>
 
-
       {/* Scrollable Content */}
-      <div className="pt-56 pb-8 px-8">
-        {loading ? (
-          <div className="text-center py-8">Loading...</div>
-        ) : (
-          <TodoList 
-            initialTodos={todos} 
-            onToggle={handleToggleTodo}
-            onDelete={handleDeleteTodo}
-            onUpdateTodo={handleUpdateTodo}
-          />
-        )}
+      <div className="pt-64 pb-8 px-6">
+        <div className="max-w-4xl mx-auto">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="text-gray-600 mt-4">読み込み中...</p>
+            </div>
+          ) : (
+            <TodoList 
+              initialTodos={todos} 
+              onToggle={handleToggleTodo}
+              onDelete={handleDeleteTodo}
+              onUpdateTodo={handleUpdateTodo}
+            />
+          )}
+        </div>
       </div>
     </main>
   );
