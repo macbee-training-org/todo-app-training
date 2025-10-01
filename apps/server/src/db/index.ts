@@ -1,9 +1,12 @@
-import { drizzle } from 'drizzle-orm/bun-sqlite'
-import { Database } from 'bun:sqlite'
-import { todos } from './schema'
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema';
 
-const sqlite = new Database('todos.db')
-export const db = drizzle(sqlite, { schema: { todos } })
+const connectionString = process.env.DATABASE_URL || 
+  'postgres://postgres:postgres@localhost:5432/todo_db';
 
-export { todos } from './schema'
-export type { Todo, NewTodo } from './schema'
+const client = postgres(connectionString);
+export const db = drizzle(client, { schema });
+
+// schemaから明示的にエクスポート
+export { todos } from './schema';

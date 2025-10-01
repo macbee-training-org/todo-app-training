@@ -1,0 +1,1 @@
+ALTER TABLE `todos` ADD `user_id` text NOT NULL;

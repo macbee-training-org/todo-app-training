@@ -1,13 +1,19 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from './src/db'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 const app = new Hono()
+
 app.use('*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
 }))
+
+// Clerk認証ミドルウェア
+app.use('*', clerkMiddleware())
 
 app.get('/', (c) => {
   return c.json({ message: 'Todo API Server' })
@@ -17,14 +23,29 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// 全Todo取得
+// 全Todo取得（ログインユーザーのみ）
 app.get('/todos', async (c) => {
-  const allTodos = await db.select().from(todos)
-  return c.json(allTodos)
+  const auth = getAuth(c)
+  
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  
+  const userTodos = await db.select()
+    .from(todos)
+    .where(eq(todos.userId, auth.userId))
+  
+  return c.json(userTodos)
 })
 
-// Todo作成
+// Todo作成（userIdを自動設定）
 app.post('/todos', async (c) => {
+  const auth = getAuth(c)
+  
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  
   const body = await c.req.json()
   const { title } = body
   
@@ -33,6 +54,7 @@ app.post('/todos', async (c) => {
   }
   
   const newTodo = await db.insert(todos).values({
+    userId: auth.userId,
     title,
     completed: false,
     createdAt: new Date()
@@ -41,33 +63,45 @@ app.post('/todos', async (c) => {
   return c.json(newTodo[0], 201)
 })
 
-// Todo更新
+// Todo更新（本人のTodoのみ）
 app.patch('/todos/:id', async (c) => {
+  const auth = getAuth(c)
+  
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  
   const id = parseInt(c.req.param('id'))
   const body = await c.req.json()
   
   const updatedTodo = await db.update(todos)
     .set(body)
-    .where(eq(todos.id, id))
+    .where(and(eq(todos.id, id), eq(todos.userId, auth.userId)))
     .returning()
   
   if (updatedTodo.length === 0) {
-    return c.json({ error: 'Todo not found' }, 404)
+    return c.json({ error: 'Todo not found or unauthorized' }, 404)
   }
   
   return c.json(updatedTodo[0])
 })
 
-// Todo削除
+// Todo削除（本人のTodoのみ）
 app.delete('/todos/:id', async (c) => {
+  const auth = getAuth(c)
+  
+  if (!auth?.userId) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+  
   const id = parseInt(c.req.param('id'))
   
   const deletedTodo = await db.delete(todos)
-    .where(eq(todos.id, id))
+    .where(and(eq(todos.id, id), eq(todos.userId, auth.userId)))
     .returning()
   
   if (deletedTodo.length === 0) {
-    return c.json({ error: 'Todo not found' }, 404)
+    return c.json({ error: 'Todo not found or unauthorized' }, 404)
   }
   
   return c.json({ message: 'Todo deleted successfully' })
