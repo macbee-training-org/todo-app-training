@@ -33,7 +33,7 @@ export async function createTodo(title: string, description: string | undefined,
   return res.json();
 }
 
-export async function updateTodo(id: number, updates: { completed?: boolean; description?: string }, token: string | null) {
+export async function updateTodo(id: number, updates: { completed?: boolean; description?: string; title?: string }, token: string | null) {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

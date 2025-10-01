@@ -48,9 +48,9 @@ export default function Home() {
   setTodos(data);
   };
 
-  const handleUpdateDescription = async (id: number, description: string) => {
+  const handleUpdateTodo = async (id: number, updates: { title?: string; description?: string }) => {
     const token = await getToken();
-    await updateTodo(id, { description }, token);
+    await updateTodo(id, updates, token);
     
   const data = await getTodos(token);
   setTodos(data);
@@ -83,7 +83,7 @@ export default function Home() {
             initialTodos={todos} 
             onToggle={handleToggleTodo}
             onDelete={handleDeleteTodo}
-            onUpdateDescription={handleUpdateDescription}
+            onUpdateTodo={handleUpdateTodo}
           />
         )}
       </div>
