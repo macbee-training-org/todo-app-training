@@ -7,7 +7,7 @@ Turbo Repo、Hono.js、Next.js、Drizzle等を使用したモダンなWeb開発�
 - **ORM**: Drizzle
 - **Build Manager**: Turbo Repo  
 - **Package Manager**: Bun
-- **UI**: shadcn + Tailwind
+- **UI**: shadcn + Tailwind (webアプリ内に統合)
 - **Web Framework**: Next.js
 - **API Framework**: Hono.js
 
@@ -15,13 +15,13 @@ Turbo Repo、Hono.js、Next.js、Drizzle等を使用したモダンなWeb開発�
 
 ```
 ./apps
+├── mcp-server ... MCPサーバー (Model Context Protocol)
 ├── server ... API関連のソースコード (Hono.js)
 └── web ... web関連のソースコード (Next.js)
 
 ./packages
 ├── eslint-config ... 共通のeslint設定
-├── typescript-config ... 共通のtypescript設定
-└── ui ... shadcnのライブラリ
+└── typescript-config ... 共通のtypescript設定
 ```
 
 ## 開発コマンド
@@ -31,8 +31,9 @@ Turbo Repo、Hono.js、Next.js、Drizzle等を使用したモダンなWeb開発�
 bun run dev
 
 # 特定のアプリのみ起動
-bun run dev --filter=web    # フロントエンドのみ
-bun run dev --filter=server # APIサーバーのみ
+bun run dev --filter=web        # フロントエンドのみ
+bun run dev --filter=server     # APIサーバーのみ
+bun run dev --filter=mcp-server # MCPサーバーのみ
 
 # ビルド
 bun run build
