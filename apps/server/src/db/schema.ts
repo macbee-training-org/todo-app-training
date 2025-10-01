@@ -1,12 +1,12 @@
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core'
+import { pgTable, serial, text, boolean, timestamp } from 'drizzle-orm/pg-core';
 
-export const todos = sqliteTable('todos', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
+export const todos = pgTable('todos', {
+  id: serial('id').primaryKey(),
   userId: text('user_id').notNull(), 
   title: text('title').notNull(),
-  completed: integer('completed', { mode: 'boolean' }).default(false).notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
-})
+  completed: boolean('completed').default(false).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+});
 
-export type Todo = typeof todos.$inferSelect
-export type NewTodo = typeof todos.$inferInsert
+export type Todo = typeof todos.$inferSelect;
+export type NewTodo = typeof todos.$inferInsert;
