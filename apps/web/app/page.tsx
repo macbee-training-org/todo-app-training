@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import { TodoList } from '@/components/todo-list';
 import { TodoForm } from '@/components/todo-form';
 import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
@@ -8,32 +9,59 @@ import { UserButton } from '@clerk/nextjs';
 export default function Home() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchTodos = async () => {
-    setLoading(true);
-    const data = await getTodos();
-    setTodos(data);
-    setLoading(false);
-  };
+  const { getToken, isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
+    const fetchTodos = async () => {
+      if (!isLoaded || !isSignedIn) {
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const token = await getToken();
+        const data = await getTodos(token);
+        setTodos(data);
+      } catch (error) {
+        console.error('Failed to fetch todos:', error);
+      }
+      setLoading(false);
+    };
+
     fetchTodos();
-  }, []);
+  }, [isLoaded, isSignedIn, getToken]);
 
   const handleAddTodo = async (title: string) => {
-    await createTodo(title);
-    fetchTodos();
+    const token = await getToken();
+    await createTodo(title, token);
+    
+    // 再取得
+    const data = await getTodos(token);
+    setTodos(data);
   };
 
   const handleToggleTodo = async (id: number, completed: boolean) => {
-    await updateTodo(id, completed);
-    fetchTodos();
+    const token = await getToken();
+    await updateTodo(id, completed, token);
+    
+    // 再取得
+    const data = await getTodos(token);
+    setTodos(data);
   };
 
   const handleDeleteTodo = async (id: number) => {
-    await deleteTodo(id);
-    fetchTodos();
+    const token = await getToken();
+    await deleteTodo(id, token);
+    
+    // 再取得
+    const data = await getTodos(token);
+    setTodos(data);
   };
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
