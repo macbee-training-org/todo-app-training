@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -12,7 +11,6 @@ interface TodoFormProps {
 export function TodoForm({ onAdd }: TodoFormProps) {
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +19,6 @@ export function TodoForm({ onAdd }: TodoFormProps) {
     setIsLoading(true);
     try {
       await onAdd(title);
-      router.refresh();
       setTitle(''); 
     } catch (error) {
       // エラー時の処理（必要ならUIで表示）

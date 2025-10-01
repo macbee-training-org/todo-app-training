@@ -23,7 +23,9 @@ export default function Home() {
         const token = await getToken();
         const data = await getTodos(token);
         setTodos(data);
-      } catch {}
+      } catch (error) {
+        console.error('Failed to fetch todos:', error);
+      }
       setLoading(false);
     };
 
