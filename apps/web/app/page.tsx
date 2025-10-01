@@ -23,9 +23,7 @@ export default function Home() {
         const token = await getToken();
         const data = await getTodos(token);
         setTodos(data);
-      } catch (error) {
-        // エラー時の処理（必要ならUIで表示）
-      }
+      } catch {}
       setLoading(false);
     };
 

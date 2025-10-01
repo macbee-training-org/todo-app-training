@@ -25,7 +25,7 @@ export function TodoList({ initialTodos, onToggle, onDelete }: TodoListProps) {
     ));
     try {
       await onToggle(id, completed);
-    } catch (error) {
+    } catch {
       setTodos(todos);
     }
   };
@@ -35,7 +35,7 @@ export function TodoList({ initialTodos, onToggle, onDelete }: TodoListProps) {
     setTodos(todos.filter(todo => todo.id !== id));
     try {
       await onDelete(id);
-    } catch (error) {
+    } catch {
       setTodos(previousTodos);
     }
   };
