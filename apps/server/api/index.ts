@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
+// import { cors } from 'hono/cors'
 import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
@@ -7,11 +7,12 @@ import { eq, and } from 'drizzle-orm'
 
 const app = new Hono()
 
-app.use('*', cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-}))
+// CORS middleware temporarily disabled due to Vercel compatibility issues
+// app.use('*', cors({
+//   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+//   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+//   allowHeaders: ['Content-Type', 'Authorization'],
+// }))
 
 app.use('*', clerkMiddleware())
 
