@@ -24,7 +24,7 @@ export function TodoForm({ onAdd }: TodoFormProps) {
       router.refresh();
       setTitle(''); 
     } catch (error) {
-      console.error('Failed to add todo:', error);
+      // エラー時の処理（必要ならUIで表示）
     } finally {
       setIsLoading(false);
     }

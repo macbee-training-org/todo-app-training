@@ -15,37 +15,28 @@ interface TodoListProps {
 export function TodoList({ initialTodos, onToggle, onDelete }: TodoListProps) {
   const [todos, setTodos] = useState<Todo[]>(initialTodos);
 
-  // initialTodosが変更されたら、内部の状態も更新
   useEffect(() => {
     setTodos(initialTodos);
   }, [initialTodos]);
 
   const handleToggle = async (id: number, completed: boolean) => {
-    // 楽観的更新（すぐに画面に反映）
     setTodos(todos.map(todo => 
       todo.id === id ? { ...todo, completed } : todo
     ));
-    
     try {
       await onToggle(id, completed);
     } catch (error) {
-      // エラーの場合は元に戻す
       setTodos(todos);
-      console.error('Failed to toggle todo:', error);
     }
   };
 
   const handleDelete = async (id: number) => {
-    // 楽観的更新（すぐに画面から削除）
     const previousTodos = todos;
     setTodos(todos.filter(todo => todo.id !== id));
-    
     try {
       await onDelete(id);
     } catch (error) {
-      // エラーの場合は元に戻す
       setTodos(previousTodos);
-      console.error('Failed to delete todo:', error);
     }
   };
 

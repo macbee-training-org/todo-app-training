@@ -12,7 +12,6 @@ app.use('*', cors({
   allowHeaders: ['Content-Type', 'Authorization'],
 }))
 
-// Clerk認証ミドルウェア
 app.use('*', clerkMiddleware())
 
 app.get('/', (c) => {
@@ -23,7 +22,6 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// 全Todo取得（ログインユーザーのみ）
 app.get('/todos', async (c) => {
   const auth = getAuth(c)
   
@@ -38,7 +36,6 @@ app.get('/todos', async (c) => {
   return c.json(userTodos)
 })
 
-// Todo作成（userIdを自動設定）
 app.post('/todos', async (c) => {
   const auth = getAuth(c)
   
@@ -63,7 +60,6 @@ app.post('/todos', async (c) => {
   return c.json(newTodo[0], 201)
 })
 
-// Todo更新（本人のTodoのみ）
 app.patch('/todos/:id', async (c) => {
   const auth = getAuth(c)
   
@@ -86,7 +82,6 @@ app.patch('/todos/:id', async (c) => {
   return c.json(updatedTodo[0])
 })
 
-// Todo削除（本人のTodoのみ）
 app.delete('/todos/:id', async (c) => {
   const auth = getAuth(c)
   

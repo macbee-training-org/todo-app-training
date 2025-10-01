@@ -1,6 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-// トークンを引数で受け取るように変更
 export async function getTodos(token: string | null) {
   const headers: Record<string, string> = {};
   

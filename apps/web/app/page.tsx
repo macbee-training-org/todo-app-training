@@ -24,7 +24,7 @@ export default function Home() {
         const data = await getTodos(token);
         setTodos(data);
       } catch (error) {
-        console.error('Failed to fetch todos:', error);
+        // エラー時の処理（必要ならUIで表示）
       }
       setLoading(false);
     };
@@ -36,27 +36,24 @@ export default function Home() {
     const token = await getToken();
     await createTodo(title, token);
     
-    // 再取得
-    const data = await getTodos(token);
-    setTodos(data);
+  const data = await getTodos(token);
+  setTodos(data);
   };
 
   const handleToggleTodo = async (id: number, completed: boolean) => {
     const token = await getToken();
     await updateTodo(id, completed, token);
     
-    // 再取得
-    const data = await getTodos(token);
-    setTodos(data);
+  const data = await getTodos(token);
+  setTodos(data);
   };
 
   const handleDeleteTodo = async (id: number) => {
     const token = await getToken();
     await deleteTodo(id, token);
     
-    // 再取得
-    const data = await getTodos(token);
-    setTodos(data);
+  const data = await getTodos(token);
+  setTodos(data);
   };
 
   if (!isLoaded) {
