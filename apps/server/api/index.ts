@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-// import { cors } from 'hono/cors'
+import { cors } from 'hono/cors'
 import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
@@ -7,12 +7,17 @@ import { eq, and } from 'drizzle-orm'
 
 const app = new Hono()
 
-// CORS middleware temporarily disabled due to Vercel compatibility issues
-// app.use('*', cors({
-//   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-//   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-//   allowHeaders: ['Content-Type', 'Authorization'],
-// }))
+// CORS middleware for Vercel deployment
+app.use('*', cors({
+  origin: [
+    'https://todo-app-training-web.vercel.app',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL || 'http://localhost:3000'
+  ],
+  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}))
 
 // Clerk middleware with error handling
 app.use('*', async (c, next) => {
