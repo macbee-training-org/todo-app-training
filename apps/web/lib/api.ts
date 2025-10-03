@@ -55,7 +55,7 @@ export async function updateTodoAction(formData: FormData) {
       return { error: 'Valid todo ID is required' }
     }
 
-    const updates: any = {}
+    const updates: { title?: string; description?: string; completed?: boolean } = {}
     if (title?.trim()) updates.title = title.trim()
     if (description?.trim()) updates.description = description.trim()
     if (formData.has('completed')) updates.completed = completed
