@@ -6,16 +6,31 @@ import { eq, and } from 'drizzle-orm'
 
 const app = new Hono()
 
-// CORS middleware for Vercel deployment
+// CORS middleware for local development and Vercel deployment
 app.use('*', async (c, next) => {
-  // Set CORS headers manually for preflight requests
-  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  const origin = c.req.header('origin')
+  
+  // Allow localhost for development
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://localhost:3000',
+    'https://todo-app-training-web.vercel.app'
+  ]
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    c.header('Access-Control-Allow-Origin', origin)
+  } else {
+    // Default to localhost for development
+    c.header('Access-Control-Allow-Origin', 'http://localhost:3000')
+  }
+  
   c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
   c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   c.header('Access-Control-Allow-Credentials', 'true')
   
   // Handle preflight requests
   if (c.req.method === 'OPTIONS') {
+    console.log('CORS middleware: Handling OPTIONS request for:', c.req.url)
     return c.text('OK', 200)
   }
   
@@ -109,7 +124,8 @@ app.options('/todos', (c) => {
 })
 
 app.get('/todos', async (c) => {
-  console.log('GET /todos - Request headers:', Object.fromEntries(c.req.header()))
+  const headers = c.req.header()
+  console.log('GET /todos - Request headers:', headers)
   
   const auth = getAuth(c)
   console.log('GET /todos - Auth result:', auth)
@@ -120,7 +136,7 @@ app.get('/todos', async (c) => {
       debug: {
         hasAuth: !!auth,
         userId: auth?.userId,
-        headers: Object.fromEntries(c.req.header())
+        headers: c.req.header()
       }
     }, 401)
   }
@@ -207,4 +223,14 @@ app.delete('/todos/:id', async (c) => {
   
   return c.json({ message: 'Todo deleted successfully' })
 })
+// Vercel用
 export default handle(app)
+
+// ローカル開発用 Bun.serve
+if (Bun.serve) {
+  Bun.serve({
+    port: 3001,
+    fetch: app.fetch,
+  })
+  console.log('🚀 API Server running on http://localhost:3001')
+}
