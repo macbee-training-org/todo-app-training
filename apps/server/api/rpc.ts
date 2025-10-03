@@ -11,7 +11,8 @@ rpcApp.use('*', clerkMiddleware())
 // Get all todos
 rpcApp.post('/getTodos', async (c) => {
   try {
-    const { userId } = getAuth(c)
+    const auth = getAuth(c)
+    const userId = auth?.userId
     // 一時的に認証を緩和してテスト
     if (!userId) {
       console.log('Warning: No auth detected, using test user')
@@ -29,7 +30,8 @@ rpcApp.post('/getTodos', async (c) => {
 // Create todo
 rpcApp.post('/createTodo', async (c) => {
   try {
-    const { userId } = getAuth(c)
+    const auth = getAuth(c)
+    const userId = auth?.userId
     // 一時的に認証を緩和してテスト
     if (!userId) {
       console.log('Warning: No auth detected, using test user')
@@ -59,7 +61,8 @@ rpcApp.post('/createTodo', async (c) => {
 // Update todo
 rpcApp.post('/updateTodo', async (c) => {
   try {
-    const { userId } = getAuth(c)
+    const auth = getAuth(c)
+    const userId = auth?.userId
     // 一時的に認証を緩和してテスト
     if (!userId) {
       console.log('Warning: No auth detected, using test user')
@@ -100,7 +103,8 @@ rpcApp.post('/updateTodo', async (c) => {
 // Delete todo
 rpcApp.post('/deleteTodo', async (c) => {
   try {
-    const { userId } = getAuth(c)
+    const auth = getAuth(c)
+    const userId = auth?.userId
     // 一時的に認証を緩和してテスト
     if (!userId) {
       console.log('Warning: No auth detected, using test user')
