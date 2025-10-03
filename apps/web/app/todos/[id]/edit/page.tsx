@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
-import { getTodos, updateTodo } from '@/lib/api';
+import { getTodosAction, updateTodoAction } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,7 @@ export default function EditTodoPage() {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { getToken, isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
   
   // Get the todo ID from the URL params
@@ -31,9 +31,15 @@ export default function EditTodoPage() {
     const fetchTodo = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        const todos = await getTodos(token);
-        const foundTodo = todos.find((t: Todo) => t.id === todoId);
+        const result = await getTodosAction();
+        if (result.error) {
+          console.error('Failed to fetch todos:', result.error);
+          alert('Failed to load task');
+          router.push('/todos');
+          return;
+        }
+        
+        const foundTodo = result.todos.find((t: Todo) => t.id === todoId);
         
         if (!foundTodo) {
           alert('Task not found');
@@ -54,7 +60,7 @@ export default function EditTodoPage() {
     };
 
     fetchTodo();
-  }, [todoId, isSignedIn, getToken, router]);
+  }, [todoId, isSignedIn, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,9 +68,17 @@ export default function EditTodoPage() {
 
     setSaving(true);
     try {
-      const token = await getToken();
-      await updateTodo(todoId, { title, description }, token);
-      router.push(`/todos/${todoId}`);
+      const formData = new FormData();
+      formData.append('id', todoId.toString());
+      formData.append('title', title);
+      formData.append('description', description);
+      
+      const result = await updateTodoAction(formData);
+      if (result.success) {
+        router.push(`/todos/${todoId}`);
+      } else {
+        alert('タスクの更新に失敗しました');
+      }
     } catch (error) {
       console.error('Failed to update todo:', error);
       alert('タスクの更新に失敗しました');

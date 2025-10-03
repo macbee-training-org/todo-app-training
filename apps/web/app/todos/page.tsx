@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { TodoList } from '@/components/todo-list';
-import { getTodos, updateTodo, deleteTodo } from '@/lib/api';
+import { getTodosAction, toggleTodoAction, updateTodoAction, deleteTodoAction } from '@/lib/api';
 import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ export default function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>('created');
-  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -25,9 +25,12 @@ export default function TodosPage() {
       
       setLoading(true);
       try {
-        const token = await getToken();
-        const data = await getTodos(token);
-        setTodos(data);
+        const result = await getTodosAction();
+        if (result.error) {
+          console.error('Failed to fetch todos:', result.error);
+        } else {
+          setTodos(result.todos);
+        }
       } catch {
         console.error('Failed to fetch todos');
       }
@@ -35,22 +38,50 @@ export default function TodosPage() {
     };
 
     fetchTodos();
-  }, [isLoaded, isSignedIn, getToken]);
+  }, [isLoaded, isSignedIn]);
 
   const handleToggleTodo = async (id: number, completed: boolean) => {
-    const token = await getToken();
-    await updateTodo(id, { completed }, token);
-    
-    const data = await getTodos(token);
-    setTodos(data);
+    try {
+      const formData = new FormData();
+      formData.append('id', id.toString());
+      formData.append('completed', completed.toString());
+      
+      const result = await toggleTodoAction(formData);
+      if (result.success) {
+        // Refresh todos
+        const refreshResult = await getTodosAction();
+        if (refreshResult.todos) {
+          setTodos(refreshResult.todos);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle todo:', error);
+    }
   };
 
   const handleUpdateTodo = async (id: number, updates: { title?: string; description?: string }) => {
-    const token = await getToken();
-    await updateTodo(id, updates, token);
-    
-    const data = await getTodos(token);
-    setTodos(data);
+    try {
+      const formData = new FormData();
+      formData.append('id', id.toString());
+      
+      if (updates.title) {
+        formData.append('title', updates.title);
+      }
+      if (updates.description !== undefined) {
+        formData.append('description', updates.description);
+      }
+      
+      const result = await updateTodoAction(formData);
+      if (result.success) {
+        // Refresh todos
+        const refreshResult = await getTodosAction();
+        if (refreshResult.todos) {
+          setTodos(refreshResult.todos);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to update todo:', error);
+    }
   };
 
   const sortTodos = (todos: Todo[], sortBy: SortOption) => {
@@ -78,11 +109,21 @@ export default function TodosPage() {
   const sortedTodos = sortTodos(todos, sortBy);
 
   const handleDeleteTodo = async (id: number) => {
-    const token = await getToken();
-    await deleteTodo(id, token);
-    
-    const data = await getTodos(token);
-    setTodos(data);
+    try {
+      const formData = new FormData();
+      formData.append('id', id.toString());
+      
+      const result = await deleteTodoAction(formData);
+      if (result.success) {
+        // Refresh todos
+        const refreshResult = await getTodosAction();
+        if (refreshResult.todos) {
+          setTodos(refreshResult.todos);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete todo:', error);
+    }
   };
 
   if (!isLoaded) {

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter, useParams } from 'next/navigation';
-import { getTodos, updateTodo, deleteTodo } from '@/lib/api';
+import { getTodosAction, updateTodoAction, deleteTodoAction } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,7 +13,7 @@ import type { Todo } from '@server/schemas';
 export default function TodoDetailPage() {
   const [todo, setTodo] = useState<Todo | null>(null);
   const [loading, setLoading] = useState(true);
-  const { getToken, isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
   
   // Get the todo ID from the URL params
@@ -28,9 +28,15 @@ export default function TodoDetailPage() {
     const fetchTodo = async () => {
       setLoading(true);
       try {
-        const token = await getToken();
-        const todos = await getTodos(token);
-        const foundTodo = todos.find((t: Todo) => t.id === todoId);
+        const result = await getTodosAction();
+        if (result.error) {
+          console.error('Failed to fetch todos:', result.error);
+          alert('Failed to load task');
+          router.push('/todos');
+          return;
+        }
+        
+        const foundTodo = result.todos.find((t: Todo) => t.id === todoId);
         
         if (!foundTodo) {
           alert('Task not found');
@@ -49,15 +55,22 @@ export default function TodoDetailPage() {
     };
 
     fetchTodo();
-  }, [todoId, isSignedIn, getToken, router]);
+  }, [todoId, isSignedIn, router]);
 
   const handleToggleComplete = async () => {
     if (!todo) return;
 
     try {
-      const token = await getToken();
-      await updateTodo(todoId, { completed: !todo.completed }, token);
-      setTodo({ ...todo, completed: !todo.completed });
+      const formData = new FormData();
+      formData.append('id', todoId.toString());
+      formData.append('completed', (!todo.completed).toString());
+      
+      const result = await updateTodoAction(formData);
+      if (result.success) {
+        setTodo({ ...todo, completed: !todo.completed });
+      } else {
+        alert('Failed to update task');
+      }
     } catch (error) {
       console.error('Failed to update todo:', error);
       alert('Failed to update task');
@@ -68,9 +81,15 @@ export default function TodoDetailPage() {
     if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
-      const token = await getToken();
-      await deleteTodo(todoId, token);
-      router.push('/todos');
+      const formData = new FormData();
+      formData.append('id', todoId.toString());
+      
+      const result = await deleteTodoAction(formData);
+      if (result.success) {
+        router.push('/todos');
+      } else {
+        alert('Failed to delete task');
+      }
     } catch (error) {
       console.error('Failed to delete todo:', error);
       alert('Failed to delete task');

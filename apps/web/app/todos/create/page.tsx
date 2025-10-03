@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { UserButton } from '@clerk/nextjs';
-import { createTodo } from '@/lib/api';
+import { createTodoAction } from '@/lib/api';
 
 export default function CreateTodoPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const { getToken } = useAuth();
+  useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,15 +20,21 @@ export default function CreateTodoPage() {
 
     setLoading(true);
     try {
-      const token = await getToken();
-      await createTodo(title, description, token);
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
       
-      // Reset form
-      setTitle('');
-      setDescription('');
-      
-      // Redirect to todos list
-      window.location.href = '/todos';
+      const result = await createTodoAction(formData);
+      if (result.success) {
+        // Reset form
+        setTitle('');
+        setDescription('');
+        
+        // Redirect to todos list
+        window.location.href = '/todos';
+      } else {
+        alert('タスクの作成に失敗しました');
+      }
     } catch (error) {
       console.error('Failed to create todo:', error);
       alert('タスクの作成に失敗しました');
