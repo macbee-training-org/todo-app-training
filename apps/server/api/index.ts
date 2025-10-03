@@ -50,6 +50,30 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
+// Test endpoint without authentication
+app.get('/test-todos', async (c) => {
+  try {
+    const testTodos = await db.select().from(todos).limit(5)
+    
+    // Add CORS headers
+    c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+    c.header('Access-Control-Allow-Credentials', 'true')
+    
+    return c.json({
+      message: 'Test todos endpoint working',
+      count: testTodos.length,
+      todos: testTodos,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Database error in test-todos:', error)
+    return c.json({ 
+      error: 'Database error', 
+      message: error.message 
+    }, 500)
+  }
+})
+
 app.get('/debug', async (c) => {
   try {
     // Test database connection
