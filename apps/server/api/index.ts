@@ -3,6 +3,9 @@ import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
 import { eq, and } from 'drizzle-orm'
+import { TodoResponseSchema, CreateTodoSchema, UpdateTodoSchema } from '../src/schemas.js'
+import { z } from 'zod'
+import { rpcApp } from './rpc.js'
 
 const app = new Hono()
 
@@ -281,6 +284,9 @@ app.delete('/mcp/todos/:id', async (c) => {
   
   return c.json({ message: 'Todo deleted successfully' })
 })
+
+// Mount RPC routes
+app.route('/rpc', rpcApp)
 
 export default handle(app)
 
