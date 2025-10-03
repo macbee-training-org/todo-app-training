@@ -1,100 +1,45 @@
 'use client';
-import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { TodoList } from '@/components/todo-list';
-import { TodoForm } from '@/components/todo-form';
-import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { UserButton } from '@clerk/nextjs';
-import type { Todo } from '@/lib/types';
-
-type SortOption = 'created' | 'title' | 'completed' | 'pending';
 
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<SortOption>('created');
-  const { getToken, isLoaded, isSignedIn } = useAuth();
-
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      if (!isLoaded || !isSignedIn) {
-        setLoading(false);
-        return;
-      }
-      
-      setLoading(true);
-      try {
-        const token = await getToken();
-        const data = await getTodos(token);
-        setTodos(data);
-      } catch {
-        console.error('Failed to fetch todos');
-      }
-      setLoading(false);
-    };
-
-    fetchTodos();
-  }, [isLoaded, isSignedIn, getToken]);
-
-  const handleAddTodo = async (title: string, description?: string) => {
-    const token = await getToken();
-    await createTodo(title, description, token);
-    
-  const data = await getTodos(token);
-  setTodos(data);
-  };
-
-  const handleToggleTodo = async (id: number, completed: boolean) => {
-    const token = await getToken();
-    await updateTodo(id, { completed }, token);
-    
-  const data = await getTodos(token);
-  setTodos(data);
-  };
-
-  const handleUpdateTodo = async (id: number, updates: { title?: string; description?: string }) => {
-    const token = await getToken();
-    await updateTodo(id, updates, token);
-    
-  const data = await getTodos(token);
-  setTodos(data);
-  };
-
-  const sortTodos = (todos: Todo[], sortBy: SortOption) => {
-    const sortedTodos = [...todos];
-    
-    switch (sortBy) {
-      case 'title':
-        return sortedTodos.sort((a, b) => a.title.localeCompare(b.title, 'ja'));
-      case 'completed':
-        return sortedTodos.sort((a, b) => {
-          if (a.completed === b.completed) return 0;
-          return a.completed ? -1 : 1;
-        });
-      case 'pending':
-        return sortedTodos.sort((a, b) => {
-          if (a.completed === b.completed) return 0;
-          return a.completed ? 1 : -1;
-        });
-      case 'created':
-      default:
-        return sortedTodos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-  };
-
-  const sortedTodos = sortTodos(todos, sortBy);
-
-  const handleDeleteTodo = async (id: number) => {
-    const token = await getToken();
-    await deleteTodo(id, token);
-    
-  const data = await getTodos(token);
-  setTodos(data);
-  };
+  const { isLoaded, isSignedIn } = useAuth();
 
   if (!isLoaded) {
     return <div>Loading...</div>;
+  }
+
+  if (!isSignedIn) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm z-10">
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="flex justify-end items-center">
+              <UserButton />
+            </div>
+          </div>
+        </div>
+        
+        <div className="pt-80 pb-8 px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <Card className="bg-white/60 backdrop-blur-sm rounded-2xl p-12 shadow-lg border border-white/20">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+                Todo App
+              </h1>
+              <p className="text-xl text-gray-600 mb-8">
+                タスクを効率的に管理しましょう
+              </p>
+              <p className="text-gray-500 mb-8">
+                まずサインインしてからTodoリストをご利用ください
+              </p>
+            </Card>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -111,80 +56,42 @@ export default function Home() {
             </div>
             <UserButton />
           </div>
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-            <TodoForm onAdd={handleAddTodo} />
-          </div>
         </div>
       </div>
 
-
-      {/* Scrollable Content */}
+      {/* Main Content */}
       <div className="pt-80 pb-8 px-6">
         <div className="max-w-4xl mx-auto">
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="text-gray-600 mt-4">読み込み中...</p>
-            </div>
-          ) : (
-            <>
-              {/* Sort Controls */}
-              <div className="mb-6 bg-white/60 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/20">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-700">並び順</h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSortBy('created')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'created'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
-                    >
-                      作成日
-                    </button>
-                    <button
-                      onClick={() => setSortBy('title')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'title'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
-                    >
-                      タイトル
-                    </button>
-                    <button
-                      onClick={() => setSortBy('pending')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'pending'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
-                    >
-                      未完了
-                    </button>
-                    <button
-                      onClick={() => setSortBy('completed')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'completed'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
-                    >
-                      完了
-                    </button>
-                  </div>
-                </div>
+          <Card className="bg-white/60 backdrop-blur-sm rounded-2xl p-12 shadow-lg border border-white/20 text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">ようこそ！</h2>
+            <p className="text-gray-600 mb-8 text-lg">
+              タスク管理を始めましょう。Todoリストでは以下の機能をご利用いただけます：
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="bg-white/50 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-3">📝 Todo管理</h3>
+                <p className="text-gray-600">タスクの作成、編集、削除、完了マーク</p>
               </div>
+              <div className="bg-white/50 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-gray-700 mb-3">🔍 ソート機能</h3>
+                <p className="text-gray-600">作成日、タイトル、完了状態で並び替え</p>
+              </div>
+            </div>
 
-              <TodoList 
-                initialTodos={sortedTodos} 
-                onToggle={handleToggleTodo}
-                onDelete={handleDeleteTodo}
-                onUpdateTodo={handleUpdateTodo}
-              />
-            </>
-          )}
+            <div className="flex gap-4 justify-center">
+              <Link href="/todos">
+                <Button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg">
+                  Todoリストを見る
+                </Button>
+              </Link>
+              <Link href="/todos/create">
+                <Button variant="outline" className="px-8 py-3 text-lg">
+                  新しいタスクを作成
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </div>
       </div>
     </main>
