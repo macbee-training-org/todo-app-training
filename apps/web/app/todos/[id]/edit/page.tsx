@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { getTodos, updateTodo } from '@/lib/api';
+import { getTodos, updateTodo } from '@/lib/api-rpc';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import type { Todo } from '@/lib/types';
+import type { Todo } from '../../../../../server/src/schemas';
 
 export default function EditTodoPage({ params }: { params: { id: string } }) {
   const [title, setTitle] = useState('');

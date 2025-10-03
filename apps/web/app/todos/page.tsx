@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { TodoList } from '@/components/todo-list';
 import { TodoForm } from '@/components/todo-form';
-import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
+import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api-rpc';
 import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
-import type { Todo } from '@/lib/types';
+import type { Todo } from '../../../../server/src/schemas';
 
 type SortOption = 'created' | 'title' | 'completed' | 'pending';
 
