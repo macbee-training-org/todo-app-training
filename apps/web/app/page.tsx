@@ -20,10 +20,10 @@ export default function Home() {
       console.log('Testing API connection...');
       const result = await testApiConnection();
       console.log('API Test Result:', result);
-      alert('API接続テスト成功！詳しくはコンソールを確認');
+      alert('API connection test successful! Check console for details');
     } catch (error) {
       console.error('API Test Failed:', error);
-      alert('API接続テスト失敗：' + error.message);
+      alert('API connection test failed: ' + error.message);
     }
   };
 
@@ -125,7 +125,7 @@ export default function Home() {
                 onClick={testApi}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
               >
-                API テスト
+                API Test
               </button>
               <UserButton />
             </div>
