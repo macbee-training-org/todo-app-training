@@ -71,11 +71,17 @@ app.get('/debug', async (c) => {
   }
 })
 
+// Explicit OPTIONS handler for todos endpoint
+app.options('/todos', (c) => {
+  console.log('Handling OPTIONS request for /todos')
+  return c.text('OK', 200)
+})
+
 app.get('/todos', async (c) => {
-  console.log('Request headers:', Object.fromEntries(c.req.header()))
+  console.log('GET /todos - Request headers:', Object.fromEntries(c.req.header()))
   
   const auth = getAuth(c)
-  console.log('Auth result:', auth)
+  console.log('GET /todos - Auth result:', auth)
   
   if (!auth?.userId) {
     return c.json({ 
@@ -93,6 +99,12 @@ app.get('/todos', async (c) => {
     .where(eq(todos.userId, auth.userId))
   
   return c.json(userTodos)
+})
+
+// Explicit OPTIONS handler for POST todos endpoint 
+app.options('/todos', (c) => {
+  console.log('Handling OPTIONS request for POST /todos')
+  return c.text('OK', 200)
 })
 
 app.post('/todos', async (c) => {
