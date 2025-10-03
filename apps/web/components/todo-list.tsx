@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { Todo } from '@/lib/types';
+import type { Todo } from '@server/schemas';
 
 interface TodoListProps {
   initialTodos: Todo[];

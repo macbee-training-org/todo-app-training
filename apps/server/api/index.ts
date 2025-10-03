@@ -1,12 +1,11 @@
 import { Hono } from 'hono'
-import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
 import { eq, and } from 'drizzle-orm'
 
 const app = new Hono()
 
-// CORS middleware for local development and Vercel deployment
+// CORS middleware for local development
 app.use('*', async (c, next) => {
   const origin = c.req.header('origin')
   
@@ -84,7 +83,7 @@ app.get('/test-todos', async (c) => {
     console.error('Database error in test-todos:', error)
     return c.json({ 
       error: 'Database error', 
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error'
     }, 500)
   }
 })
@@ -104,7 +103,7 @@ app.get('/debug', async (c) => {
     return c.json({
       status: 'error',
       message: 'Database connection failed',
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     }, 500)
   }
@@ -223,9 +222,6 @@ app.delete('/todos/:id', async (c) => {
   
   return c.json({ message: 'Todo deleted successfully' })
 })
-// Vercel用
-export default handle(app)
-
 // ローカル開発用 Bun.serve
 if (Bun.serve) {
   Bun.serve({
