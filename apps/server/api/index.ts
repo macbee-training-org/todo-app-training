@@ -14,14 +14,48 @@ const app = new Hono()
 //   allowHeaders: ['Content-Type', 'Authorization'],
 // }))
 
-app.use('*', clerkMiddleware())
+// Clerk middleware with error handling
+app.use('*', async (c, next) => {
+  try {
+    return await clerkMiddleware()(c, next)
+  } catch (error) {
+    console.error('Clerk middleware error:', error)
+    return c.json({ error: 'Authentication configuration error' }, 500)
+  }
+})
 
 app.get('/', (c) => {
-  return c.json({ message: 'Todo API Server' })
+  return c.json({ 
+    message: 'Todo API Server',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV 
+  })
 })
 
 app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+app.get('/debug', async (c) => {
+  try {
+    // Test database connection
+    const result = await db.select().from(todos).limit(1)
+    return c.json({
+      status: 'ok',
+      message: 'Database connection successful',
+      hasData: result.length > 0,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Database error:', error)
+    return c.json({
+      status: 'error',
+      message: 'Database connection failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    }, 500)
+  }
 })
 
 app.get('/todos', async (c) => {
