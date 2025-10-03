@@ -1,5 +1,4 @@
 import { Hono } from 'hono'
-import { cors } from 'hono/cors'
 import { handle } from 'hono/vercel'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
@@ -8,16 +7,20 @@ import { eq, and } from 'drizzle-orm'
 const app = new Hono()
 
 // CORS middleware for Vercel deployment
-app.use('*', cors({
-  origin: [
-    'https://todo-app-training-web.vercel.app',
-    'http://localhost:3000',
-    process.env.FRONTEND_URL || 'http://localhost:3000'
-  ],
-  allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}))
+app.use('*', async (c, next) => {
+  // Set CORS headers manually for preflight requests
+  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  c.header('Access-Control-Allow-Credentials', 'true')
+  
+  // Handle preflight requests
+  if (c.req.method === 'OPTIONS') {
+    return c.text('OK', 200)
+  }
+  
+  await next()
+})
 
 // Clerk middleware with error handling
 app.use('*', async (c, next) => {
@@ -64,10 +67,20 @@ app.get('/debug', async (c) => {
 })
 
 app.get('/todos', async (c) => {
+  console.log('Request headers:', Object.fromEntries(c.req.header()))
+  
   const auth = getAuth(c)
+  console.log('Auth result:', auth)
   
   if (!auth?.userId) {
-    return c.json({ error: 'Unauthorized' }, 401)
+    return c.json({ 
+      error: 'Unauthorized', 
+      debug: {
+        hasAuth: !!auth,
+        userId: auth?.userId,
+        headers: Object.fromEntries(c.req.header())
+      }
+    }, 401)
   }
   
   const userTodos = await db.select()
