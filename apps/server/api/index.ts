@@ -74,6 +74,13 @@ app.get('/debug', async (c) => {
 // Explicit OPTIONS handler for todos endpoint
 app.options('/todos', (c) => {
   console.log('Handling OPTIONS request for /todos')
+  
+  // Set complete CORS headers for preflight
+  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  c.header('Access-Control-Allow-Credentials', 'true')
+  
   return c.text('OK', 200)
 })
 
@@ -98,14 +105,13 @@ app.get('/todos', async (c) => {
     .from(todos)
     .where(eq(todos.userId, auth.userId))
   
+  // Add CORS headers to actual response
+  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Credentials', 'true')
+  
   return c.json(userTodos)
 })
 
-// Explicit OPTIONS handler for POST todos endpoint 
-app.options('/todos', (c) => {
-  console.log('Handling OPTIONS request for POST /todos')
-  return c.text('OK', 200)
-})
 
 app.post('/todos', async (c) => {
   const auth = getAuth(c)
@@ -128,6 +134,10 @@ app.post('/todos', async (c) => {
     completed: false,
     createdAt: new Date()
   }).returning()
+  
+  // Add CORS headers to actual response
+  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Credentials', 'true')
   
   return c.json(newTodo[0], 201)
 })
