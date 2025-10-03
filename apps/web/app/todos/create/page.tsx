@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { createTodo } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +12,7 @@ export default function CreateTodoPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const { getToken, isSignedIn } = useAuth();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,8 +31,23 @@ export default function CreateTodoPage() {
     setLoading(true);
     
     try {
-      const token = await getToken();
-      await createTodo(title.trim(), description.trim() || undefined, token);
+      // Use Server Action instead of direct API call
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      if (description.trim()) {
+        formData.append('description', description.trim());
+      }
+
+      // This will be replaced with Server Action call
+      const response = await fetch('/api/todos/create', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create task');
+      }
+
       router.push('/todos');
     } catch (error) {
       console.error('Failed to create todo:', error);
