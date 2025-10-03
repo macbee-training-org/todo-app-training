@@ -22,8 +22,13 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-// Clerk middleware with error handling
+// Clerk middleware with error handling (skip auth for OPTIONS preflight)
 app.use('*', async (c, next) => {
+  // Skip authentication for OPTIONS requests (CORS preflight)
+  if (c.req.method === 'OPTIONS') {
+    return await next()
+  }
+  
   try {
     return await clerkMiddleware()(c, next)
   } catch (error) {
