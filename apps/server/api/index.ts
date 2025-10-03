@@ -84,7 +84,7 @@ app.get('/test-todos', async (c) => {
     console.error('Database error in test-todos:', error)
     return c.json({ 
       error: 'Database error', 
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error'
     }, 500)
   }
 })
@@ -104,7 +104,7 @@ app.get('/debug', async (c) => {
     return c.json({
       status: 'error',
       message: 'Database connection failed',
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     }, 500)
   }
