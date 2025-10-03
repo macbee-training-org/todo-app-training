@@ -224,6 +224,64 @@ app.delete('/todos/:id', async (c) => {
   return c.json({ message: 'Todo deleted successfully' })
 })
 // Vercel用
+// MCP専用エンドポイント（認証なし、ローカル開発用）
+app.get('/mcp/todos', async (c) => {
+  // Development use only - no auth required for MCP
+  const allTodos = await db.select().from(todos)
+  
+  // Add CORS headers
+  c.header('Access-Control-Allow-Origin', '*')
+  c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
+  
+  return c.json(allTodos)
+})
+
+app.post('/mcp/todos', async (c) => {
+  const body = await c.req.json()
+  const { title } = body
+  
+  // Use hardcoded user for MCP
+  const newTodo = await db.insert(todos).values({
+    userId: 'mcp-user', // Fixed user for MCP server
+    title,
+    description: '',
+    completed: false,
+    createdAt: new Date()
+  }).returning()
+  
+  // Add CORS headers
+  c.header('Access-Control-Allow-Origin', '*')
+  
+  return c.json(newTodo[0], 201)
+})
+
+app.patch('/mcp/todos/:id', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  const body = await c.req.json()
+  
+  const updatedTodo = await db.update(todos)
+    .set(body)
+    .where(eq(todos.id, id))
+    .returning()
+  
+  // Add CORS headers
+  c.header('Access-Control-Allow-Origin', '*')
+  
+  return c.json(updatedTodo[0])
+})
+
+app.delete('/mcp/todos/:id', async (c) => {
+  const id = parseInt(c.req.param('id'))
+  
+  await db.delete(todos)
+    .where(eq(todos.id, id))
+  
+  // Add CORS headers
+  c.header('Access-Control-Allow-Origin', '*')
+  
+  return c.json({ message: 'Todo deleted successfully' })
+})
+
 export default handle(app)
 
 // ローカル開発用 Bun.serve
