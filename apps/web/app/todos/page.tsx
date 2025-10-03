@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { TodoList } from '@/components/todo-list';
-import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
+import { getTodos, updateTodo, deleteTodo } from '@/lib/api';
 import { UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
