@@ -9,7 +9,12 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/index.ts"
+      "dest": "/api/index"
     }
-  ]
+  ],
+  "functions": {
+    "api/index.ts": {
+      "auth": false
+    }
+  }
 }
