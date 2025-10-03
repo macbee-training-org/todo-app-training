@@ -134,46 +134,34 @@ export default function TodosPage() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-700">並び順</h3>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => setSortBy('created')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'created'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
+                      variant={sortBy === 'created' ? 'default' : 'outline'}
+                      className={sortBy === 'created' ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0' : 'bg-white/50 hover:bg-white/70'}
                     >
                       作成日
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setSortBy('title')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'title'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
+                      variant={sortBy === 'title' ? 'default' : 'outline'}
+                      className={sortBy === 'title' ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0' : 'bg-white/50 hover:bg-white/70'}
                     >
                       タイトル
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setSortBy('pending')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'pending'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
+                      variant={sortBy === 'pending' ? 'default' : 'outline'}
+                      className={sortBy === 'pending' ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0' : 'bg-white/50 hover:bg-white/70'}
                     >
                       未完了
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setSortBy('completed')}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        sortBy === 'completed'
-                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
-                          : 'bg-white/50 text-gray-600 hover:bg-white/70 hover:text-gray-800'
-                      }`}
+                      variant={sortBy === 'completed' ? 'default' : 'outline'}
+                      className={sortBy === 'completed' ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0' : 'bg-white/50 hover:bg-white/70'}
                     >
                       完了
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
