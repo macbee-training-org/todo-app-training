@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { handle } from 'hono/vercel'
+// Vercel handle removed - focusing on local development
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { db, todos } from '../src/db/index.js'
 import { eq, and } from 'drizzle-orm'
@@ -9,15 +9,14 @@ import { rpcApp } from './rpc.js'
 
 const app = new Hono()
 
-// CORS middleware for local development and Vercel deployment
+// CORS middleware for local development
 app.use('*', async (c, next) => {
   const origin = c.req.header('origin')
   
   // Allow localhost for development
   const allowedOrigins = [
     'http://localhost:3000',
-    'https://localhost:3000',
-    'https://todo-app-training-web.vercel.app'
+    'https://localhost:3000'
   ]
   
   if (origin && allowedOrigins.includes(origin)) {
@@ -33,7 +32,7 @@ app.use('*', async (c, next) => {
   
   // Handle preflight requests
   if (c.req.method === 'OPTIONS') {
-    console.log('CORS middleware: Handling OPTIONS request for:', c.req.url)
+    // CORS preflight request handled
     return c.text('OK', 200)
   }
   
@@ -74,7 +73,7 @@ app.get('/test-todos', async (c) => {
     const testTodos = await db.select().from(todos).limit(5)
     
     // Add CORS headers
-    c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+    c.header('Access-Control-Allow-Origin', 'http://localhost:3000')
     c.header('Access-Control-Allow-Credentials', 'true')
     
     return c.json({
@@ -92,33 +91,13 @@ app.get('/test-todos', async (c) => {
   }
 })
 
-app.get('/debug', async (c) => {
-  try {
-    // Test database connection
-    const result = await db.select().from(todos).limit(1)
-    return c.json({
-      status: 'ok',
-      message: 'Database connection successful',
-      hasData: result.length > 0,
-      timestamp: new Date().toISOString()
-    })
-  } catch (error) {
-    console.error('Database error:', error)
-    return c.json({
-      status: 'error',
-      message: 'Database connection failed',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    }, 500)
-  }
-})
+// Debug endpoint removed - codebase cleaned for training program
 
-// Explicit OPTIONS handler for todos endpoint
+// OPTIONS handler for todos endpoint
 app.options('/todos', (c) => {
-  console.log('Handling OPTIONS request for /todos')
   
   // Set complete CORS headers for preflight
-  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Origin', 'http://localhost:3000')
   c.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
   c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   c.header('Access-Control-Allow-Credentials', 'true')
@@ -127,20 +106,11 @@ app.options('/todos', (c) => {
 })
 
 app.get('/todos', async (c) => {
-  const headers = c.req.header()
-  console.log('GET /todos - Request headers:', headers)
-  
   const auth = getAuth(c)
-  console.log('GET /todos - Auth result:', auth)
   
   if (!auth?.userId) {
     return c.json({ 
-      error: 'Unauthorized', 
-      debug: {
-        hasAuth: !!auth,
-        userId: auth?.userId,
-        headers: c.req.header()
-      }
+      error: 'Unauthorized'
     }, 401)
   }
   
@@ -149,7 +119,7 @@ app.get('/todos', async (c) => {
     .where(eq(todos.userId, auth.userId))
   
   // Add CORS headers to actual response
-  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Origin', 'http://localhost:3000')
   c.header('Access-Control-Allow-Credentials', 'true')
   
   return c.json(userTodos)
@@ -179,7 +149,7 @@ app.post('/todos', async (c) => {
   }).returning()
   
   // Add CORS headers to actual response
-  c.header('Access-Control-Allow-Origin', 'https://todo-app-training-web.vercel.app')
+  c.header('Access-Control-Allow-Origin', 'http://localhost:3000')
   c.header('Access-Control-Allow-Credentials', 'true')
   
   return c.json(newTodo[0], 201)
@@ -288,7 +258,7 @@ app.delete('/mcp/todos/:id', async (c) => {
 // Mount RPC routes
 app.route('/rpc', rpcApp)
 
-export default handle(app)
+// export default handle(app) // Removed Vercel export for local development focus
 
 // ローカル開発用 Bun.serve
 if (Bun.serve) {
