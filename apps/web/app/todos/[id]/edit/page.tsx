@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { getTodos, updateTodo } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import type { Todo } from '@server/schemas';
 
-export default function EditTodoPage({ params }: { params: { id: string } }) {
+export default function EditTodoPage() {
   const [todo, setTodo] = useState<Todo | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -18,7 +18,9 @@ export default function EditTodoPage({ params }: { params: { id: string } }) {
   const [saving, setSaving] = useState(false);
   const { getToken, isSignedIn } = useAuth();
   const router = useRouter();
-  const todoId = parseInt(params.id);
+  
+  // Get the todo ID from the URL params
+  const todoId = parseInt(useParams()?.id as string);
 
   useEffect(() => {
     if (!isSignedIn) {
