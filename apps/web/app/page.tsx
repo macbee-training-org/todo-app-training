@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { TodoList } from '@/components/todo-list';
 import { TodoForm } from '@/components/todo-form';
-import { getTodos, createTodo, updateTodo, deleteTodo } from '@/lib/api';
+import { getTodos, createTodo, updateTodo, deleteTodo, testApiConnection } from '@/lib/api';
 import { UserButton } from '@clerk/nextjs';
 import type { Todo } from '@/lib/types';
 
@@ -14,6 +14,18 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>('created');
   const { getToken, isLoaded, isSignedIn } = useAuth();
+
+  const testApi = async () => {
+    try {
+      console.log('Testing API connection...');
+      const result = await testApiConnection();
+      console.log('API Test Result:', result);
+      alert('API接続テスト成功！詳しくはコンソールを確認');
+    } catch (error) {
+      console.error('API Test Failed:', error);
+      alert('API接続テスト失敗：' + error.message);
+    }
+  };
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -108,7 +120,15 @@ export default function Home() {
               </h1>
               <p className="text-gray-600 mt-1">タスクを効率的に管理しましょう</p>
             </div>
-            <UserButton />
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={testApi}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+              >
+                API テスト
+              </button>
+              <UserButton />
+            </div>
           </div>
           <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
             <TodoForm onAdd={handleAddTodo} />

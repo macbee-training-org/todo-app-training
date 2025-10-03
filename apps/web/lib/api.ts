@@ -1,5 +1,27 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+// Debug function to test API connectivity
+export async function testApiConnection() {
+  try {
+    console.log('Testing API connection to:', API_URL);
+    const res = await fetch(`${API_URL}/test-todos`, {
+      cache: 'no-store'
+    });
+    
+    if (!res.ok) {
+      console.error('API test failed:', res.status, res.statusText);
+      throw new Error(`API test failed: ${res.status}`);
+    }
+    
+    const data = await res.json();
+    console.log('API test successful:', data);
+    return data;
+  } catch (error) {
+    console.error('API connection test failed:', error);
+    throw error;
+  }
+}
+
 export async function getTodos(token: string | null) {
   const headers: Record<string, string> = {};
   
