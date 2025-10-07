@@ -1,89 +1,227 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+'use server'
 
-// Debug function to test API connectivity
-export async function testApiConnection() {
+import { revalidatePath } from 'next/cache'
+import { hc } from 'hono/client'
+import { CreateTodoSchema, UpdateTodoSchema } from '../../server/src/schemas'
+
+const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
+// Hono RPCクライアントの作成
+const client = hc(baseURL)
+
+// Get auth headers for RPC calls
+async function getRpcHeaders() {
+  return {
+    'Authorization': 'Bearer test-token',
+    'Content-Type': 'application/json'
+  }
+}
+
+// Server Actions using typed Hono RPC
+export async function createTodoAction(formData: FormData) {
   try {
-    console.log('Testing API connection to:', API_URL);
-    const res = await fetch(`${API_URL}/test-todos`, {
-      cache: 'no-store'
-    });
-    
-    if (!res.ok) {
-      console.error('API test failed:', res.status, res.statusText);
-      throw new Error(`API test failed: ${res.status}`);
+    // zodバリデーション
+    const rawData = {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string
     }
+
+    const validationResult = CreateTodoSchema.safeParse(rawData)
+    if (!validationResult.success) {
+      return { error: validationResult.error.errors[0]?.message || 'Invalid input' }
+    }
+
+    const { title, description } = validationResult.data
+
+    const headers = await getRpcHeaders()
     
-    const data = await res.json();
-    console.log('API test successful:', data);
-    return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (client as any).rpc.createTodo.$post(
+      {
+        json: {
+          title: title.trim(),
+          description: description?.trim() || ''
+        }
+      },
+      { headers }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Create todo error:', errorText)
+      throw new Error('Failed to create todo')
+    }
+
+    const todo = await response.json()
+
+    revalidatePath('/todos')
+    return { success: true, todo }
   } catch (error) {
-    console.error('API connection test failed:', error);
-    throw error;
+    console.error('Create todo action error:', error)
+    return {
+      error: error instanceof Error ? error.message : 'An unexpected error occurred'
+    }
   }
 }
 
-export async function getTodos(token: string | null) {
-  const headers: Record<string, string> = {};
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+export async function getTodosAction() {
+  try {
+    console.log('Fetching todos from:', `${baseURL}/rpc/getTodos`)
+    
+    const headers = await getRpcHeaders()
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (client as any).rpc.getTodos.$post(
+      { json: {} },
+      { headers }
+    )
+
+    console.log('Response status:', response.status)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Get todos error response:', errorText)
+      throw new Error('Failed to fetch todos')
+    }
+
+    const todos = await response.json()
+    console.log('Fetched todos:', todos)
+    
+    return { todos, error: null }
+  } catch (error) {
+    console.error('Get todos action error:', error)
+    return {
+      todos: [],
+      error: error instanceof Error ? error.message : 'An unexpected error occurred'
+    }
   }
-  
-  const res = await fetch(`${API_URL}/todos`, {
-    headers,
-    cache: 'no-store'
-  });
-  if (!res.ok) throw new Error('Failed to fetch todos');
-  return res.json();
 }
 
-export async function createTodo(title: string, description: string | undefined, token: string | null) {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+export async function updateTodoAction(formData: FormData) {
+  try {
+    const id = formData.get('id') as string
+    
+    if (!id || isNaN(Number(id))) {
+      return { error: 'Valid todo ID is required' }
+    }
+
+    // zodバリデーション
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawData: any = {}
+    if (formData.has('title')) rawData.title = formData.get('title') as string
+    if (formData.has('description')) rawData.description = formData.get('description') as string
+    if (formData.has('completed')) rawData.completed = formData.get('completed') === 'true'
+
+    if (Object.keys(rawData).length === 0) {
+      return { error: 'No updates provided' }
+    }
+
+    const validationResult = UpdateTodoSchema.safeParse(rawData)
+    if (!validationResult.success) {
+      return { error: validationResult.error.errors[0]?.message || 'Invalid input' }
+    }
+
+    const updates = validationResult.data
+
+    const headers = await getRpcHeaders()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (client as any).rpc.updateTodo.$post(
+      {
+        json: {
+          id: Number(id),
+          ...updates
+        }
+      },
+      { headers }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Update todo error:', errorText)
+      throw new Error('Failed to update todo')
+    }
+
+    const todo = await response.json()
+
+    revalidatePath('/todos')
+    revalidatePath(`/todos/${id}`)
+    return { success: true, todo }
+  } catch (error) {
+    console.error('Update todo action error:', error)
+    return {
+      error: error instanceof Error ? error.message : 'An unexpected error occurred'
+    }
   }
-  
-  const res = await fetch(`${API_URL}/todos`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ title, description })
-  });
-  if (!res.ok) throw new Error('Failed to create todo');
-  return res.json();
 }
 
-export async function updateTodo(id: number, updates: { completed?: boolean; description?: string; title?: string }, token: string | null) {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+export async function deleteTodoAction(formData: FormData) {
+  try {
+    const id = formData.get('id') as string
+
+    if (!id || isNaN(Number(id))) {
+      return { error: 'Valid todo ID is required' }
+    }
+
+    const headers = await getRpcHeaders()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (client as any).rpc.deleteTodo.$post(
+      { 
+        json: { id: Number(id) }
+      },
+      { headers }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Delete todo error:', errorText)
+      throw new Error('Failed to delete todo')
+    }
+
+    revalidatePath('/todos')
+    return { success: true }
+  } catch (error) {
+    console.error('Delete todo action error:', error)
+    return {
+      error: error instanceof Error ? error.message : 'An unexpected error occurred'
+    }
   }
-  
-  const res = await fetch(`${API_URL}/todos/${id}`, {
-    method: 'PATCH',
-    headers,
-    body: JSON.stringify(updates)
-  });
-  if (!res.ok) throw new Error('Failed to update todo');
-  return res.json();
 }
 
-export async function deleteTodo(id: number, token: string | null) {
-  const headers: Record<string, string> = {};
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+export async function toggleTodoAction(formData: FormData) {
+  try {
+    const id = formData.get('id') as string
+    const completed = formData.get('completed') === 'true'
+
+    if (!id || isNaN(Number(id))) {
+      return { error: 'Valid todo ID is required' }
+    }
+
+    const headers = await getRpcHeaders()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (client as any).rpc.updateTodo.$post(
+      {
+        json: {
+          id: Number(id),
+          completed
+        }
+      },
+      { headers }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Toggle todo error:', errorText)
+      throw new Error('Failed to toggle todo')
+    }
+
+    const todo = await response.json()
+
+    revalidatePath('/todos')
+    return { success: true, todo }
+  } catch (error) {
+    console.error('Toggle todo action error:', error)
+    return {
+      error: error instanceof Error ? error.message : 'An unexpected error occurred'
+    }
   }
-  
-  const res = await fetch(`${API_URL}/todos/${id}`, {
-    method: 'DELETE',
-    headers,
-  });
-  if (!res.ok) throw new Error('Failed to delete todo');
-  return res.json();
 }
