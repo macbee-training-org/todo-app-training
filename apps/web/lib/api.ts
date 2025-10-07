@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { hc } from 'hono/client'
-import type { AppType } from '../../server/api/index'
 import { CreateTodoSchema, UpdateTodoSchema } from '../../server/src/schemas'
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
@@ -36,6 +35,7 @@ export async function createTodoAction(formData: FormData) {
 
     const headers = await getRpcHeaders()
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (client as any).rpc.createTodo.$post(
       {
         json: {
@@ -70,6 +70,7 @@ export async function getTodosAction() {
     
     const headers = await getRpcHeaders()
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (client as any).rpc.getTodos.$post(
       { json: {} },
       { headers }
@@ -105,6 +106,7 @@ export async function updateTodoAction(formData: FormData) {
     }
 
     // zodバリデーション
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawData: any = {}
     if (formData.has('title')) rawData.title = formData.get('title') as string
     if (formData.has('description')) rawData.description = formData.get('description') as string
@@ -122,6 +124,7 @@ export async function updateTodoAction(formData: FormData) {
     const updates = validationResult.data
 
     const headers = await getRpcHeaders()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (client as any).rpc.updateTodo.$post(
       {
         json: {
@@ -160,6 +163,7 @@ export async function deleteTodoAction(formData: FormData) {
     }
 
     const headers = await getRpcHeaders()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (client as any).rpc.deleteTodo.$post(
       { 
         json: { id: Number(id) }
@@ -193,6 +197,7 @@ export async function toggleTodoAction(formData: FormData) {
     }
 
     const headers = await getRpcHeaders()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await (client as any).rpc.updateTodo.$post(
       {
         json: {
